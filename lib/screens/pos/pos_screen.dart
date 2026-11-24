@@ -62,9 +62,10 @@ class _PosScreenState extends State<PosScreen> {
     final posProvider = Provider.of<PosProvider>(context);
 
     // Kategori utama selalu tampil + kategori lain dari database
+    // Kategori utama selalu tampil + kategori lain dari database
     final Map<String, String> kategoriMap = {
       'semua': 'Semua',
-      'Bahan mentah': 'Bahan Mentah',
+      'bahan mentah': 'Bahan Mentah',
       'bahan siap pakai': 'Bahan Siap Pakai',
     };
     for (final p in produkProvider.produkList) {

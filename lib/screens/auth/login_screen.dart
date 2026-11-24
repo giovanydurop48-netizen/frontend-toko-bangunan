@@ -1,6 +1,6 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
+import '../../providers/auth_provider.dart';
 
 class LoginScreen extends StatefulWidget {
   const LoginScreen({super.key});
@@ -30,38 +30,22 @@ class _LoginScreenState extends State<LoginScreen> {
 
     setState(() => _isLoading = true);
     try {
-      final inputUser = _usernameController.text.trim();
-      final password = _passwordController.text;
-
-      final response = await http.post(
-        Uri.parse('http://127.0.0.1:8000/api/login'),
-        headers: {
-          'Content-Type': 'application/json',
-          'Accept': 'application/json',
-        },
-        body: jsonEncode({
-          'email': inputUser,
-          'username': inputUser,
-          'password': password,
-        }),
+      final authProvider = Provider.of<AuthProvider>(context, listen: false);
+      final success = await authProvider.login(
+        _usernameController.text.trim(),
+        _passwordController.text,
       );
 
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200 &&
-          (data['success'] == true ||
-              data['status'] == 'success' ||
-              data['token'] != null ||
-              data['access_token'] != null)) {
-        if (!mounted) return;
-        // Sesuaikan '/kasir' dengan nama route halaman kasir di lib/main.dart (misal '/pos' atau '/home')
+      if (!mounted) return;
+      if (success) {
         Navigator.pushReplacementNamed(context, '/kasir');
       } else {
-        if (!mounted) return;
-        final pesan = data['message'] ?? 'Email/Username atau password salah.';
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text(pesan),
+            content: Text(
+              authProvider.errorMessage ??
+                  'Login gagal. Periksa email/username dan password Kasir.',
+            ),
             backgroundColor: Colors.red.shade700,
           ),
         );
@@ -81,7 +65,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   Widget build(BuildContext context) {
-    // Palet warna identik dengan Dashboard Admin & Owner TB. Maju Jaya
     final bgColor =
         _isDarkMode ? const Color(0xFF140E0A) : const Color(0xFFF4F1EC);
     final cardColor = _isDarkMode ? const Color(0xFF1F1610) : Colors.white;
